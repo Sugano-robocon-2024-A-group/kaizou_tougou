@@ -6,6 +6,7 @@
 #include "PWM.h"//PWM関連は別ファイルにした
 #include "souten.h" 
 #include "gyoukaku.h"
+#include "encoder.h"
 //#include "functions.h"//運転関連のものはここに入っている。
 
 //使用ボタン設定
@@ -58,6 +59,15 @@ const int CAN_RX_PIN = 26;  // 受信ピン（GPIO26）
   //setupReceiver();
   setupSender();
   Serial.println("Start");
+
+  //エンコーダ準備 エンコーダピンの設定
+  for (int i = 0; i < 2; i++){
+    pinMode(encoderA[i], INPUT_PULLUP);
+    pinMode(encoderB[i], INPUT_PULLUP);
+  }
+  // 割り込みの設定
+  attachInterrupt(digitalPinToInterrupt(encoderA[0]), []() { handleEncoder(0); }, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(encoderA[1]), []() { handleEncoder(1); }, CHANGE);
 }
 
 // loop関数 やること　CAN送信、（前輪Encoder読み、前輪回転）、いろいろやる。
@@ -111,8 +121,25 @@ if (PS4.isConnected()) {
 
   //ここで動作処理をする。
   //Encoder読み
+// デバッグ用：エンコーダカウントを出力
+  for (int i = 0; i < 2; i++)
+  {
+    Serial.print("Encoder ");
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.println(encoderCount[i]);
+  }
+//encoderCount[0]が右後ろ　encoderCount[1]が左後ろ
 
-  //動作
+//移動関数.これはこっちはAshimawari_Commandなどでうごかして
+    if(Ashimawari_Command==1){//これでHIGHにする
+        //analogWrite(PIN_SYASYUTU, dutyCycle );
+        Serial.print("UP");
+      }else if(Ashimawari_Command==2){
+        //digitalWrite(PIN_SYASYUTU,LOW);
+        Serial.print("BACK");
+      }
+
 }
 
   delay(150);  // 0.15秒の遅延

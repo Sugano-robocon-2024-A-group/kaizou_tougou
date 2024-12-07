@@ -18,12 +18,10 @@ void receivePacket(uint32_t &id, uint16_t *data, uint16_t &length) {
   delay(10); 
   int packetSize = CAN.parsePacket();  // 受信したパケットのサイズを取得
 
-  if (packetSize) {  // パケットが受信された場合
+  if (packetSize>0) {  // パケットが受信された場合
     Serial.print("Received ");
 
     for (int i = 0; i < length; i++) {
-      //data[i] = (int)CAN.read();uint16_t
-      //data[i] = (uint16_t)CAN.read();
   uint8_t byte = CAN.read();  // 1 バイト読み取る
   data[i] = static_cast<uint16_t>(byte);  
     }
@@ -40,13 +38,14 @@ void receivePacket(uint32_t &id, uint16_t *data, uint16_t &length) {
       Serial.print(" and length ");
       Serial.println(packetSize);
       // データをシリアルに表示
+      
       while (CAN.available()) {
         Serial.print((uint16_t)CAN.read());//⇒こいつで100って出てる。
-    //id = CAN.packetId();        // CAN IDを取得
-    //length = CAN.packetDlc();   // データ長を取得
+    id = CAN.packetId();        // CAN IDを取得
+    length = CAN.packetDlc();   // データ長を取得
     // データを配列に格納
-    Serial.println();  
       }
+    Serial.println();  
     }
   }
 }
