@@ -83,7 +83,7 @@ if (PS4.isConnected()) {
     if (PS4.Triangle()) {//装填
       Serial.println("Triangle Button");//Debug  Serial.println("装填開始");
       Souten();
-      digitalWrite(PIN_SYASYUTU,LOW);
+      digitalWrite(souten_servoPin,LOW);
       Serial.println("装填終了");
       }
     if (PS4.R1()){

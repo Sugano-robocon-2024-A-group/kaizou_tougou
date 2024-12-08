@@ -3,13 +3,21 @@
 #include <CAN.h>
 #include "tuushin.h"
 #include "encoder.h"
+#include "functions_kai.h"
 
 // エンコーダ関連のピン設定 CPPにあり。
-// カウント値をグローバルに定義済み（CPP) volatile int encoderCount[4] = {0, 0, 0, 0};
+// カウント値をグローバルに定義済み
 
 uint32_t id;          // CAN IDを格納する変数
 uint16_t data[8]={0,0,0,0,0,0,0,0};      // 受信データを格納する配列（最大8バイト）
 uint16_t length=0;       // 受信データの長さを格納する変数
+
+// 許容誤差と移動距離目標
+const int allowableError = 5;
+// エンコーダ関連の設定
+const float wheelDiameter = 80.0;
+const float encoderPulsesPerRevolution = 750;
+const float distancePerCount = (PI * wheelDiameter) / encoderPulsesPerRevolution;
 
 // setup関数: 初期設定を行う。CANバスの初期化と、送受信の設定を呼び出す
 void setup() {
@@ -74,36 +82,43 @@ if (receivePacket) {
 //encoderCount[0]が右後ろ　encoderCount[1]が左後ろ
 
 //移動関数
-    if(data[0]==1){//これでHIGHにする
-        //analogWrite(PIN_SYASYUTU, dutyCycle );
-        Serial.print("UP");
-      }else if(data[0]==2){
-        //digitalWrite(PIN_SYASYUTU,LOW);
-        Serial.print("BACK");
-      }
-    //Dataの値で動かす
-    /*// 送信処理を実行
-  if (PS4.Right()){Ashimawari_Command=3;
-      }
-      if (PS4.Down()){Ashimawari_Command=2;
-      }
-      if (PS4.Up()){Ashimawari_Command=1;
-      }
-      if (PS4.Left()){Ashimawari_Command=4;
-      }
-      if (PS4.UpRight()){Ashimawari_Command=5;
-      }
-      if (PS4.DownRight()){Ashimawari_Command=6;
-      }
-      if (PS4.UpLeft()){Ashimawari_Command=7;
-      }
-      if (PS4.DownLeft()){Ashimawari_Command=8;
-      }*/
+bool reachedTarget = true;
 
+    for (int i = 0; i < 4; i++) {
+        float currentDistance = encoderCount[i] * distancePerCount;
+        float controlSignal = pidCompute(i, targetDistance[i], currentDistance);
+       /* if(controlSignal<100.0){
+          controlSignal=0.0;
+          }*/
+        Serial.printf("%f ",currentDistance);
+        Serial.printf("%f ",targetDistance[i]);
+        Serial.printf("%f \n",controlSignal);
+        driveMotor(i, controlSignal);
+        if (abs(currentDistance - targetDistance[i]) > allowableError) {
+            reachedTarget = false;
+        }
+    }
+
+    if (reachedTarget) {
+        stopMotors();
+        resetControlVariables();
+        /*
+        //ここでTargetも0にする
+         for (int j = 0; j < 4; j++) {
+        targetDistance[j]=0.0;
+         }
+        Serial.print("reachedTarget\n");*/
+        handleMoterInput(targetDistance, data[0]);
+    }
  
-for (int i = 0; i < 8; i++) {
+for (int i = 0; i < 1; i++) {
     data[i] = 0;
     }
 }
  delay(40);  // 1秒の遅延
 }
+
+/*f (PS4.isConnected()) {
+           // handlePS4Input();//動きを説明する関数（もし入力が入ったら？）
+            handlePS4Input(targetDistance);//動きを説明する関数（もし入力が入ったら？）
+        }*/

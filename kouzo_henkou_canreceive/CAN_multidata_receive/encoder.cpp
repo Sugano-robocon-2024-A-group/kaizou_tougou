@@ -5,7 +5,6 @@
 volatile int encoderCount[2] = {0, 0};// カウント値
 
 // エンコーダ関連のピン設定
-//extern const int encoderA[4] = {18, 25, 22, 32}; // エンコーダA相ピン
 /*Receiveがうしろ
 const int encoderA[4] = {19, 14, 23, 33}; // エンコーダA相ピン
 const int encoderB[4] = {18, 25, 22, 32}; // エンコーダB相ピン*/
